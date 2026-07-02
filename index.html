@@ -102,11 +102,15 @@
 
 <script>
 /************************************************************
- * 設定値（LINE Developersで発行した値・GASのデプロイURLに書き換える）
+ * 設定値
+ * この3つはビルド時にGitHub Actionsがリポジトリのsecretsから
+ * 置き換える（.github/workflows/deploy-pages.yml参照）。
+ * gitに commit されているのはプレースホルダーのみで、実際の値は
+ * このファイルにもgit履歴にも残らない。
  ************************************************************/
-const LIFF_ID = '2010567685-hXCTnNzx';
-const API_BASE_URL = 'https://asia-northeast1-popi-carshare-bot.cloudfunctions.net/popi-bot';
-const API_ACCESS_TOKEN = '4f3baf5103475afb2d294e49432ef74d'; // functions/.env.yaml の API_ACCESS_TOKEN と同じ値にする
+const LIFF_ID = '__LIFF_ID__';
+const API_BASE_URL = '__API_BASE_URL__';
+const API_ACCESS_TOKEN = '__API_ACCESS_TOKEN__';
 
 let viewerName = null;
 

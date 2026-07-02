@@ -18,7 +18,7 @@
   .brand-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#7fb4cf;}
   .avatar-wrap{flex:none;position:relative;animation:popiFloat 4s ease-in-out infinite;}
   .avatar{width:66px;height:66px;border-radius:50%;background:linear-gradient(150deg,#cfe6f2,#dff0e6);padding:3px;box-shadow:0 4px 12px -4px rgba(90,140,170,.5);display:flex;align-items:center;justify-content:center;}
-  .avatar-inner{width:60px;height:60px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-size:30px;}
+  .avatar-inner{width:60px;height:60px;border-radius:50%;background:#fff;display:block;object-fit:cover;}
   .top-row{display:flex;align-items:center;gap:14px;}
   .top-info{flex:1;min-width:0;}
   .sub-label{font-size:11px;color:#8a968f;font-weight:500;margin-bottom:1px;}
@@ -68,7 +68,7 @@
     <div class="brand"><span class="brand-dot"></span>ポピィ店長のカーシェア</div>
     <div class="top-row">
       <div class="avatar-wrap">
-        <div class="avatar"><div class="avatar-inner">🦜</div></div>
+        <div class="avatar"><img class="avatar-inner" src="assets/popi-icon.png" alt="ポピィ"></div>
       </div>
       <div class="top-info">
         <div class="sub-label">青いマメルリハインコ・店長</div>

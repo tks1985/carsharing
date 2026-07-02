@@ -5,7 +5,7 @@ const { parseReservationCommand } = require('../lib/parseCommand');
 const { getRankInfo } = require('../lib/rankTable');
 const { formatDateKey, formatDateLabel } = require('../lib/dateUtils');
 const { withPopiSuffix, buildReservationMessage, buildCancelMessage, buildLevelUpMessage } = require('../lib/messages');
-const { matchSmallTalk } = require('../lib/smallTalk');
+const { matchSmallTalk, getRandomFallback } = require('../lib/smallTalk');
 const store = require('../lib/firestore');
 
 const router = express.Router();
@@ -48,10 +48,8 @@ async function handleEvent(event) {
   const parsed = parseReservationCommand(event.message.text, new Date());
   console.log('handleEvent text="' + event.message.text + '" parsed=' + JSON.stringify(parsed));
   if (!parsed) {
-    const smallTalkReply = matchSmallTalk(event.message.text);
-    if (smallTalkReply) {
-      await replyMessage(event.replyToken, [{ type: 'text', text: smallTalkReply }], CONFIG.LINE_CHANNEL_ACCESS_TOKEN);
-    }
+    const reply = matchSmallTalk(event.message.text) || getRandomFallback();
+    await replyMessage(event.replyToken, [{ type: 'text', text: reply }], CONFIG.LINE_CHANNEL_ACCESS_TOKEN);
     return;
   }
 

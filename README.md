@@ -17,17 +17,19 @@ LINE (1:1トーク・リッチメニュー)
   - デプロイ名: `popi-bot`
   - URL: `https://asia-northeast1-popi-carshare-bot.cloudfunctions.net/popi-bot`
   - ソース: [functions/](functions/)
-- **フロントエンド（LIFF）**: 素の静的HTML（[index.html](index.html)）を GitHub Pages で配信
+- **フロントエンド（LIFF）**: 静的HTML（[index.html](index.html)）を GitHub Actions でビルドして GitHub Pages に配信
   - このリポジトリ自体がGitHub Pagesの公開元（Public）: https://tks1985.github.io/carsharing/
-  - LIFF IDは`index.html`の`LIFF_ID`定数を参照（エンドポイントURLは上記のGitHub Pages URLに設定済み）
+  - `index.html`にコミットされているのは`__LIFF_ID__`等のプレースホルダーのみ。実際の値はリポジトリのActions Secrets（`LIFF_ID`/`API_BASE_URL`/`API_ACCESS_TOKEN`）に保存されており、pushのたびに[.github/workflows/deploy-pages.yml](.github/workflows/deploy-pages.yml)が置換してデプロイする（詳細は後述）
+  - Pagesの設定は「Source: GitHub Actions」（「Deploy from a branch」ではない）
 - **LINE設定**: Messaging APIチャネル（Bot本体）＋ 別のLINE Loginチャネル（LIFFはこちらでしか作れない）。同一Providerに所属していれば連携設定は不要
 - **リッチメニュー**: LINE Official Account Manager（manager.line.biz）の画面から手動設定。LIFF URL（`https://liff.line.me/{LIFF_ID}`）へのリンクのみで、コード側の実装は無し
 
 ## ディレクトリ構成
 
 ```
-index.html              LIFFページ（GitHub Pagesで配信される唯一のファイル）
+index.html              LIFFページ（値はプレースホルダー、ビルド時に注入される）
 assets/popi-icon.png     LIFFヘッダーのポピィのアイコン画像
+.github/workflows/deploy-pages.yml   Actions Secretsを注入してGitHub Pagesへデプロイするワークフロー
 functions/               Cloud Functionsのソース（現行バックエンド）
   index.js                エントリーポイント（functions.http('popiBot', app)）
   src/app.js               Expressアプリ本体（ルーティング・CORS設定）
@@ -54,7 +56,7 @@ main.js, appsscript.json, ind   過去に使っていたGoogle Apps Script版の
 - **TZ環境変数が必須**: Node.jsには GAS の `appsscript.json` timeZone 相当の自動時刻補正がない。`functions/.env.yaml` に `TZ: "Asia/Tokyo"` が無いと、日本時間0:00〜8:59の間だけ「今日/明日」の判定がズレるバグになる（日中のテストでは気づけない）。[functions/src/lib/config.js](functions/src/lib/config.js) で起動時に警告ログを出している。
 - **累計経験値（`status/current`のcount）は、キャンセルすると1減る**（最初は「減らない」仕様だったが、連打で不正に進化できてしまうため変更した）。予約が対応するキャンセルでのみ減算されるため、0未満にはならない。
 - **呼びかけワード「ポピィ」は撤廃済み**（グループチャット時代の誤反応防止用だったが、1:1運用では不要と判断）。この結果、「今日はお疲れさま」のような雑談に含まれる「今日」等の単語だけで予約コマンドと誤認識され、勝手に終日予約されるリスクを許容している（対策なしで進める、とユーザー確認済み）。
-- **API認証はBearerトークンの共有シークレット方式**（`API_ACCESS_TOKEN`）。GitHub Pagesは公開リポジトリなので`index.html`に埋め込まれたこの値は誰でも閲覧可能。本格的な認証ではなく、自動スキャンやいたずらの抑止が目的の「無いよりマシ」レベルの防御という前提で運用している。
+- **API認証はBearerトークンの共有シークレット方式**（`API_ACCESS_TOKEN`）。gitのソースには含まれていないが、デプロイ後の公開ページ（GitHub Pages）のHTMLソースを見れば誰でも読める値であることに変わりはない。本格的な認証ではなく、自動スキャンやいたずらの抑止が目的の「無いよりマシ」レベルの防御という前提で運用している。
 - **Webhookの通知は「予約/キャンセル/出世」は家族全員にmulticast、エラーや確認結果は送信者本人にreply**という使い分けをしている（[functions/src/routes/webhook.js](functions/src/routes/webhook.js)の`handleEvent`）。
 - **`--min-instances=1`は使っていない**（コールドスタートより月額課金の回避を優先）。LIFFを開くとまずスケジュール取得でインスタンスが温まるため、その後のタップ操作は速くなりやすい。
 
@@ -73,7 +75,15 @@ gcloud functions deploy popi-bot \
 
 `functions/.env.yaml`は各自で`.env.yaml.example`を元に作成する（本物の値はこのファイルにしか無く、リポジトリには含まれない）。
 
-フロントエンド（`index.html`）はGitHub Pagesが`main`ブランチを自動配信しているだけなので、`git push`するだけで反映される。
+フロントエンド（`index.html`）は、以下3つをリポジトリの Settings → Secrets and variables → Actions に登録しておけば、`main`にpushするたびに GitHub Actions が自動でビルド・デプロイする。
+
+| Secret名 | 値 |
+|---|---|
+| `LIFF_ID` | LINE LoginチャネルのLIFFタブで発行されたID |
+| `API_BASE_URL` | Cloud FunctionsのURL（上記参照） |
+| `API_ACCESS_TOKEN` | `functions/.env.yaml`の`API_ACCESS_TOKEN`と同じ値 |
+
+トークンを再発行（ローテーション）した場合は、`functions/.env.yaml`とこのActions Secretsの両方を更新し、Cloud Functionsを再デプロイする必要がある。
 
 ## ローカル動作確認
 

@@ -1,0 +1,7 @@
+# GASプロジェクト側のファイル（本物のトークン等を含むため絶対にpushしない）
+main.js
+appsscript.json
+ind
+
+# エディタ・ツール設定
+.claude/

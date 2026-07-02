@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ポピィ店長のカーシェア</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<style>
+  html,body{margin:0;background:#dfe7e2;}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  button{font-family:inherit;border:none;cursor:pointer;}
+  #app{max-width:430px;margin:0 auto;min-height:100vh;background:#f2f7f4;font-family:'Zen Kaku Gothic New',system-ui,sans-serif;color:#2f3b36;position:relative;overflow-x:hidden;padding-bottom:44px;}
+  .header{position:sticky;top:0;z-index:6;background:linear-gradient(160deg,#e9f3f6 0%,#e8f4ec 100%);padding:16px 18px 18px;border-radius:0 0 26px 26px;box-shadow:0 8px 22px -12px rgba(70,110,95,.45);}
+  .brand{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;letter-spacing:.08em;color:#6a8f9d;margin-bottom:12px;}
+  .brand-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#7fb4cf;}
+  .avatar-wrap{flex:none;position:relative;animation:popiFloat 4s ease-in-out infinite;}
+  .avatar{width:66px;height:66px;border-radius:50%;background:linear-gradient(150deg,#cfe6f2,#dff0e6);padding:3px;box-shadow:0 4px 12px -4px rgba(90,140,170,.5);display:flex;align-items:center;justify-content:center;}
+  .avatar-inner{width:60px;height:60px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-size:30px;}
+  .top-row{display:flex;align-items:center;gap:14px;}
+  .top-info{flex:1;min-width:0;}
+  .sub-label{font-size:11px;color:#8a968f;font-weight:500;margin-bottom:1px;}
+  .rank-title{font-family:'Zen Maru Gothic',sans-serif;font-size:19px;font-weight:700;color:#2f6f57;line-height:1.15;}
+  .progress-track{height:9px;border-radius:9px;background:#e4ece7;overflow:hidden;margin-top:8px;}
+  .progress-fill{height:100%;border-radius:9px;background:linear-gradient(90deg,#7fb4cf,#63bd93);transition:width .4s ease;width:0%;}
+  .remaining{font-size:11px;font-weight:700;color:#5aa17e;margin-top:4px;}
+  .message-bubble{display:flex;align-items:flex-start;gap:8px;margin-top:14px;background:#fff;border-radius:15px;padding:10px 13px;box-shadow:0 2px 8px -4px rgba(70,110,95,.25);}
+  .message-bubble p{margin:0;font-size:12.5px;line-height:1.55;color:#4c5b53;font-family:'Zen Maru Gothic',sans-serif;}
+  .section{padding:18px 18px 6px;}
+  .section h2{margin:0;font-family:'Zen Maru Gothic',sans-serif;font-size:16px;font-weight:700;color:#2f3b36;}
+  .section-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:11px;}
+  .hint{font-size:11px;color:#9aa5a0;}
+  .legend{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:4px;}
+  .legend .item{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:#5b6b63;background:#fff;border:1px solid #e6ece8;border-radius:20px;padding:4px 10px;}
+  .legend .dot{width:11px;height:11px;border-radius:4px;}
+  .days{padding:0 18px;}
+  .day-card{background:#fff;border-radius:20px;padding:12px 12px 13px;margin-bottom:12px;box-shadow:0 1px 4px rgba(60,90,75,.06);}
+  .day-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;padding:0 3px;}
+  .day-num-row{display:flex;align-items:baseline;gap:7px;}
+  .day-num{font-family:'Zen Maru Gothic',sans-serif;font-size:20px;font-weight:700;}
+  .day-dow{font-size:12px;font-weight:600;}
+  .day-rel{display:none;font-size:11px;font-weight:700;color:#2f6f57;background:#e3f1ea;border-radius:20px;padding:2px 10px;}
+  .day-rel.show{display:inline-block;}
+  .slots{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .slot-btn{display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding:11px 13px;border-radius:16px;width:100%;text-align:left;transition:transform .08s ease;}
+  .slot-btn:active{transform:scale(.97);}
+  .slot-chip{font-size:10px;font-weight:700;letter-spacing:.04em;padding:2px 8px;border-radius:20px;margin-bottom:2px;}
+  .slot-main{font-family:'Zen Maru Gothic',sans-serif;font-size:15px;font-weight:700;line-height:1.1;}
+  .slot-hint{font-size:10.5px;opacity:.92;font-weight:500;}
+  .slot-empty{background:#63bd93;color:#0f5236;box-shadow:0 3px 0 #4aa47b;}
+  .slot-empty .slot-chip{background:rgba(255,255,255,.35);color:#0f5236;}
+  .slot-mine{background:#f7d979;color:#7a5a10;box-shadow:0 3px 0 #e5c257;}
+  .slot-mine .slot-chip{background:rgba(255,255,255,.55);color:#7a5a10;}
+  .slot-others{background:#eef1ef;color:#9aa5a0;box-shadow:none;border:1px solid #e4e8e5;cursor:not-allowed;}
+  .slot-others .slot-chip{background:#e2e7e4;color:#9aa5a0;}
+  .toast{position:fixed;left:50%;bottom:26px;z-index:20;background:#2f6f57;color:#fff;font-family:'Zen Maru Gothic',sans-serif;font-size:13px;font-weight:700;padding:11px 20px;border-radius:22px;box-shadow:0 8px 24px -6px rgba(47,111,87,.6);white-space:nowrap;opacity:0;pointer-events:none;}
+  .toast.show{animation:popiToast 1.8s ease forwards;}
+  .loading{padding:40px;text-align:center;color:#8a968f;font-size:13px;}
+  @keyframes popiToast{0%{opacity:0;transform:translate(-50%,14px);}12%{opacity:1;transform:translate(-50%,0);}88%{opacity:1;transform:translate(-50%,0);}100%{opacity:0;transform:translate(-50%,8px);}}
+  @keyframes popiFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-4px);}}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="header">
+    <div class="brand"><span class="brand-dot"></span>ポピィ店長のカーシェア</div>
+    <div class="top-row">
+      <div class="avatar-wrap">
+        <div class="avatar"><div class="avatar-inner">🦜</div></div>
+      </div>
+      <div class="top-info">
+        <div class="sub-label">青いマメルリハインコ・店長</div>
+        <div class="rank-title" id="rankTitle">読み込み中…</div>
+        <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+        <div class="remaining" id="remainingText"></div>
+      </div>
+    </div>
+    <div class="message-bubble"><span>🐦</span><p id="rankMessage">少々お待ちくださいピィ…</p></div>
+    <div id="debugStatus" style="margin-top:8px;font-size:11px;color:#c0392b;font-weight:700;"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-head">
+      <h2 id="monthLabel">スケジュール</h2>
+      <span class="hint">直近<span id="rangeDays"></span>日・タップで予約</span>
+    </div>
+    <div class="legend">
+      <span class="item"><span class="dot" style="background:#63bd93;"></span>空き</span>
+      <span class="item"><span class="dot" style="background:#f7d979;"></span>あなたが予約中</span>
+      <span class="item"><span class="dot" style="background:#cdd5d0;"></span>他の人が予約中</span>
+    </div>
+  </div>
+
+  <div class="days" id="days">
+    <div class="loading">読み込み中ピィ…</div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+/************************************************************
+ * 設定値（LINE Developersで発行した値・GASのデプロイURLに書き換える）
+ ************************************************************/
+const LIFF_ID = '2010567685-hXCTnNzx';
+const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbwp2v4bU8u7EIemTm2naBcBbavKjDvouhNKh1OnddT4cSH-AvVuA0jLzyI-o5Sr6rRKGQ/exec';
+const API_ACCESS_TOKEN = 'YOUR_API_ACCESS_TOKEN'; // main.js の CONFIG.API_ACCESS_TOKEN と同じ値にする
+
+let viewerName = null;
+
+function setStatus(text) {
+  const el = document.getElementById('debugStatus');
+  if (el) el.textContent = text;
+  console.log('[boot status] ' + text);
+}
+
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.remove('show');
+  void el.offsetWidth;
+  el.classList.add('show');
+}
+
+function apiGet(action, params) {
+  const url = new URL(API_BASE_URL);
+  url.searchParams.set('action', action);
+  url.searchParams.set('token', API_ACCESS_TOKEN);
+  Object.keys(params || {}).forEach(function (k) {
+    url.searchParams.set(k, params[k]);
+  });
+  return fetch(url.toString()).then(function (res) {
+    return res.json();
+  }).then(function (json) {
+    if (!json.ok) throw new Error(json.message || 'unknown error');
+    return json;
+  });
+}
+
+function renderData(data) {
+  setStatus('');
+  document.getElementById('rankTitle').textContent = data.rank.title;
+  document.getElementById('rankMessage').textContent = data.rank.message;
+  document.getElementById('rangeDays').textContent = data.days.length;
+
+  const pct = data.nextThreshold === null
+    ? 100
+    : Math.round((data.count - data.prevThreshold) / ((data.nextThreshold + 1) - data.prevThreshold) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('remainingText').textContent = data.nextThreshold === null
+    ? '最高階級に到達……もはや誰にも止められないピュイ'
+    : '次の進化まで あと' + ((data.nextThreshold + 1) - data.count) + '回！';
+
+  if (data.days.length > 0) {
+    document.getElementById('monthLabel').textContent = data.days[0].label.split('/')[0] + '月のスケジュール';
+  }
+
+  const daysEl = document.getElementById('days');
+  daysEl.innerHTML = '';
+  data.days.forEach(function (day, i) {
+    const card = document.createElement('div');
+    card.className = 'day-card';
+    const rel = i === 0 ? '今日' : i === 1 ? '明日' : '';
+    const dnum = day.label.split('(')[0];
+    const dow = day.label.split('(')[1];
+    const head = document.createElement('div');
+    head.className = 'day-head';
+    head.innerHTML =
+      '<div class="day-num-row"><span class="day-num">' + dnum + '</span><span class="day-dow">(' + dow + '</span></div>' +
+      '<span class="day-rel' + (rel ? ' show' : '') + '">' + rel + '</span>';
+    const slotsWrap = document.createElement('div');
+    slotsWrap.className = 'slots';
+    slotsWrap.appendChild(buildSlotButton(day, 'am', '午前'));
+    slotsWrap.appendChild(buildSlotButton(day, 'pm', '午後'));
+    card.appendChild(head);
+    card.appendChild(slotsWrap);
+    daysEl.appendChild(card);
+  });
+}
+
+function buildSlotButton(day, key, label) {
+  const slot = day[key];
+  const btn = document.createElement('button');
+  btn.className = 'slot-btn slot-' + slot.state;
+  let main, hint;
+  if (slot.state === 'empty') { main = '空き'; hint = 'タップで予約'; }
+  else if (slot.state === 'mine') { main = 'あなた'; hint = 'タップでキャンセル ✕'; }
+  else { main = slot.name; hint = '予約中・タップ不可'; }
+  if (slot.isNow) hint += '（現在）';
+  btn.innerHTML =
+    '<span class="slot-chip">' + label + '</span>' +
+    '<span class="slot-main">' + main + '</span>' +
+    '<span class="slot-hint">' + hint + '</span>';
+  if (slot.state !== 'others') {
+    btn.addEventListener('click', function () { onSlotTap(day.dateKey, key, slot.state); });
+  }
+  return btn;
+}
+
+function onSlotTap(dateKey, slotKey, state) {
+  const action = state === 'empty' ? 'reserve' : state === 'mine' ? 'cancel' : null;
+  if (!action) return;
+  apiGet(action, { date: dateKey, slot: slotKey, viewer: viewerName })
+    .then(function (res) { showToast(res.message); loadData(); })
+    .catch(function (err) {
+      console.error(action + ' failed', err);
+      showToast('エラーが起きたピィ…（' + err.message + '）');
+    });
+}
+
+function loadData() {
+  setStatus('データ取得中…');
+  apiGet('schedule', { viewer: viewerName })
+    .then(renderData)
+    .catch(function (err) {
+      console.error('getScheduleData failed', err);
+      setStatus('データ取得に失敗したピィ…（' + err.message + '）');
+      showToast('データ取得に失敗したピィ…');
+    });
+}
+
+function boot() {
+  setStatus('SDK確認中…');
+  if (typeof liff === 'undefined') {
+    setStatus('LIFF SDKの読み込みに失敗したピィ…（ネットワークまたはCDNブロックの可能性）');
+    return;
+  }
+
+  setStatus('LIFF初期化中…');
+  liff.init({ liffId: LIFF_ID }).then(function () {
+    setStatus('ログイン確認中…');
+    if (!liff.isLoggedIn()) {
+      setStatus('LINEログインへ遷移中…');
+      liff.login();
+      return;
+    }
+    setStatus('プロフィール取得中…');
+    return liff.getProfile();
+  }).then(function (profile) {
+    if (!profile) return;
+    viewerName = profile.displayName;
+    loadData();
+  }).catch(function (err) {
+    console.error('liff.init failed', err);
+    const msg = err && err.message ? err.message : String(err);
+    setStatus('LIFFの初期化に失敗したピィ…（' + msg + '）');
+    showToast('LIFFの初期化に失敗したピィ…');
+  });
+}
+
+boot();
+</script>
+</body>
+</html>

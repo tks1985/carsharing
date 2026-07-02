@@ -202,6 +202,10 @@ function buildSlotButton(day, key, label) {
 function onSlotTap(dateKey, slotKey, state) {
   const action = state === 'empty' ? 'reserve' : state === 'mine' ? 'cancel' : null;
   if (!action) return;
+  showToast(action === 'reserve' ? '予約処理中…' : 'キャンセル処理中…');
+  // LINEの内蔵ブラウザではこのfetchの応答が正しく返らないことがあるため、
+  // 応答を待たずに一定時間後に必ず最新状態を再取得する（サーバー側の処理自体は既に実行済み）。
+  setTimeout(loadData, 2500);
   apiGet(action, { date: dateKey, slot: slotKey, viewer: viewerName })
     .then(function (res) { showToast(res.message); loadData(); })
     .catch(function (err) {

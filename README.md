@@ -19,9 +19,9 @@ LINE (1:1トーク・リッチメニュー)
   - ソース: [functions/](functions/)
 - **フロントエンド（LIFF）**: 素の静的HTML（[index.html](index.html)）を GitHub Pages で配信
   - このリポジトリ自体がGitHub Pagesの公開元（Public）: https://tks1985.github.io/carsharing/
-  - LIFF ID: `2010567685-hXCTnNzx` （エンドポイントURLは上記のGitHub Pages URLに設定済み）
+  - LIFF IDは`index.html`の`LIFF_ID`定数を参照（エンドポイントURLは上記のGitHub Pages URLに設定済み）
 - **LINE設定**: Messaging APIチャネル（Bot本体）＋ 別のLINE Loginチャネル（LIFFはこちらでしか作れない）。同一Providerに所属していれば連携設定は不要
-- **リッチメニュー**: LINE Official Account Manager（manager.line.biz）の画面から手動設定。LIFF URL（`https://liff.line.me/2010567685-hXCTnNzx`）へのリンクのみで、コード側の実装は無し
+- **リッチメニュー**: LINE Official Account Manager（manager.line.biz）の画面から手動設定。LIFF URL（`https://liff.line.me/{LIFF_ID}`）へのリンクのみで、コード側の実装は無し
 
 ## ディレクトリ構成
 

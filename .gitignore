@@ -5,3 +5,7 @@ ind
 
 # エディタ・ツール設定
 .claude/
+
+# Cloud Functions（本物のトークン等を含むため絶対にpushしない）
+functions/.env.yaml
+functions/node_modules/

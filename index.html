@@ -105,8 +105,8 @@
  * 設定値（LINE Developersで発行した値・GASのデプロイURLに書き換える）
  ************************************************************/
 const LIFF_ID = '2010567685-hXCTnNzx';
-const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbwp2v4bU8u7EIemTm2naBcBbavKjDvouhNKh1OnddT4cSH-AvVuA0jLzyI-o5Sr6rRKGQ/exec';
-const API_ACCESS_TOKEN = '4f3baf5103475afb2d294e49432ef74d'; // main.js の CONFIG.API_ACCESS_TOKEN と同じ値にする
+const API_BASE_URL = 'https://asia-northeast1-popi-carshare-bot.cloudfunctions.net/popi-bot';
+const API_ACCESS_TOKEN = '4f3baf5103475afb2d294e49432ef74d'; // functions/.env.yaml の API_ACCESS_TOKEN と同じ値にする
 
 let viewerName = null;
 
@@ -124,19 +124,34 @@ function showToast(msg) {
   el.classList.add('show');
 }
 
-function apiGet(action, params) {
-  const url = new URL(API_BASE_URL);
-  url.searchParams.set('action', action);
-  url.searchParams.set('token', API_ACCESS_TOKEN);
-  Object.keys(params || {}).forEach(function (k) {
-    url.searchParams.set(k, params[k]);
-  });
-  return fetch(url.toString()).then(function (res) {
+function apiRequest(method, path, params, body) {
+  const url = new URL(API_BASE_URL + path);
+  if (params) {
+    Object.keys(params).forEach(function (k) { url.searchParams.set(k, params[k]); });
+  }
+  const opts = { method: method, headers: { Authorization: 'Bearer ' + API_ACCESS_TOKEN } };
+  if (body) {
+    opts.headers['Content-Type'] = 'application/json';
+    opts.body = JSON.stringify(body);
+  }
+  return fetch(url.toString(), opts).then(function (res) {
     return res.json();
   }).then(function (json) {
     if (!json.ok) throw new Error(json.message || 'unknown error');
     return json;
   });
+}
+
+function apiGetSchedule(viewer) {
+  return apiRequest('GET', '/api/schedule', { viewer: viewer });
+}
+
+function apiReserve(date, slot, viewer) {
+  return apiRequest('POST', '/api/reserve', null, { date: date, slot: slot, viewer: viewer });
+}
+
+function apiCancel(date, slot, viewer) {
+  return apiRequest('POST', '/api/cancel', null, { date: date, slot: slot, viewer: viewer });
 }
 
 function renderData(data) {
@@ -203,10 +218,8 @@ function onSlotTap(dateKey, slotKey, state) {
   const action = state === 'empty' ? 'reserve' : state === 'mine' ? 'cancel' : null;
   if (!action) return;
   showToast(action === 'reserve' ? '予約処理中…' : 'キャンセル処理中…');
-  // LINEの内蔵ブラウザではこのfetchの応答が正しく返らないことがあるため、
-  // 応答を待たずに一定時間後に必ず最新状態を再取得する（サーバー側の処理自体は既に実行済み）。
-  setTimeout(loadData, 2500);
-  apiGet(action, { date: dateKey, slot: slotKey, viewer: viewerName })
+  const call = action === 'reserve' ? apiReserve : apiCancel;
+  call(dateKey, slotKey, viewerName)
     .then(function (res) { showToast(res.message); loadData(); })
     .catch(function (err) {
       console.error(action + ' failed', err);
@@ -216,7 +229,7 @@ function onSlotTap(dateKey, slotKey, state) {
 
 function loadData() {
   setStatus('データ取得中…');
-  apiGet('schedule', { viewer: viewerName })
+  apiGetSchedule(viewerName)
     .then(renderData)
     .catch(function (err) {
       console.error('getScheduleData failed', err);

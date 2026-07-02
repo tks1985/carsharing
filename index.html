@@ -55,10 +55,10 @@
   .slot-mine .slot-chip{background:rgba(255,255,255,.55);color:#7a5a10;}
   .slot-others{background:#eef1ef;color:#9aa5a0;box-shadow:none;border:1px solid #e4e8e5;cursor:not-allowed;}
   .slot-others .slot-chip{background:#e2e7e4;color:#9aa5a0;}
-  .toast{position:fixed;left:50%;bottom:26px;z-index:20;background:#2f6f57;color:#fff;font-family:'Zen Maru Gothic',sans-serif;font-size:13px;font-weight:700;padding:11px 20px;border-radius:22px;box-shadow:0 8px 24px -6px rgba(47,111,87,.6);white-space:nowrap;opacity:0;pointer-events:none;}
+  .toast{position:fixed;left:50%;top:16px;z-index:20;background:#2f6f57;color:#fff;font-family:'Zen Maru Gothic',sans-serif;font-size:13px;font-weight:700;padding:11px 20px;border-radius:22px;box-shadow:0 8px 24px -6px rgba(47,111,87,.6);white-space:nowrap;opacity:0;pointer-events:none;}
   .toast.show{animation:popiToast 1.8s ease forwards;}
   .loading{padding:40px;text-align:center;color:#8a968f;font-size:13px;}
-  @keyframes popiToast{0%{opacity:0;transform:translate(-50%,14px);}12%{opacity:1;transform:translate(-50%,0);}88%{opacity:1;transform:translate(-50%,0);}100%{opacity:0;transform:translate(-50%,8px);}}
+  @keyframes popiToast{0%{opacity:0;transform:translate(-50%,-14px);}12%{opacity:1;transform:translate(-50%,0);}88%{opacity:1;transform:translate(-50%,0);}100%{opacity:0;transform:translate(-50%,-8px);}}
   @keyframes popiFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-4px);}}
 </style>
 </head>

@@ -16,7 +16,14 @@ function buildCancelMessage(rank, displayName, dateLabel, slotLabel) {
   return '❌ ' + dateLabel + ' ' + slotLabel + '\n' + displayName + 'さんがキャンセルした' + rank.ending;
 }
 
+// 転落・トラブル段階（mood: 'down'）で「出世した」は変なので、mood ごとに言い回しを変える。
 function buildLevelUpMessage(rank) {
+  if (rank.mood === 'down') {
+    return 'ピュ…' + rank.firstPerson + '、今日から【' + rank.title + '】になってしまった' + rank.ending + '…' + rank.joyLine;
+  }
+  if (rank.mood === 'recover') {
+    return 'ピッ…！' + rank.firstPerson + '、今日から【' + rank.title + '】として再出発する' + rank.ending + '！' + rank.joyLine;
+  }
   return 'ポピュイ！' + rank.firstPerson + 'の経験値が溜まって、今日から【' + rank.title + '】に出世した' + rank.ending + '！' + rank.joyLine;
 }
 
